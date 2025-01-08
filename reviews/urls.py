@@ -7,13 +7,13 @@ from .views import (
     MovieViewSet,
     ReviewViewSet,
     MovieListCreateView,
-    MovieReviewListView,
     MovieDetailView,
     ReviewListCreateView,
     ReviewDetailView,
     UserUpdateView,
     UserDeleteView,
     UserListView,
+    CreateMovieReviewView,
 )
 
 # Router for ViewSets
@@ -34,11 +34,11 @@ urlpatterns = [
     # Movies
     path('movies/', MovieListCreateView.as_view(), name='movie-list-create'),
     path('movies/<int:movie_id>/', MovieDetailView.as_view(), name='movie-detail'),
-    path('movies/<int:movie_id>/reviews/', MovieReviewListView.as_view(), name='movie-reviews'),
 
     # Reviews
     path('movies/<int:movie_id>/reviews/', ReviewListCreateView.as_view(), name='review-list-create'),
     path('reviews/<int:review_id>/', ReviewDetailView.as_view(), name='review-detail'),
+    path('movies/<int:movie_id>/reviews/create/', CreateMovieReviewView.as_view(), name='create-movie-review'),
 
     # Include router URLs for ViewSets
     path('', include(router.urls)),

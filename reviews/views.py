@@ -203,38 +203,6 @@ class MovieDetailView(APIView):
         movie.delete()
         return Response({"message": "Movie deleted successfully"})
 
-#View Reviews by Movie
-class MovieReviewListView(APIView):
-    permission_classes = [AllowAny]  # Anyone can view reviews for a specific movie
-
-    def get(self, request, movie_id):
-        # Fetch all reviews for the given movie_id
-        reviews = Review.objects.filter(movie_id=movie_id)
-
-        # Optional query parameters for additional filtering
-        rating = request.query_params.get('rating', None)
-        if rating:
-            try:
-                rating = int(rating)
-                if 1 <= rating <= 5:
-                    reviews = reviews.filter(rating=rating)  # Filter by rating
-                else:
-                    return Response(
-                        {"error": "Rating must be between 1 and 5."},
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
-            except ValueError:
-                return Response(
-                    {"error": "Invalid rating value. Rating must be an integer between 1 and 5."},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
-        # Apply pagination
-        paginator = ReviewPagination()
-        result_page = paginator.paginate_queryset(reviews, request)
-        serializer = ReviewSerializer(result_page, many=True)
-        return paginator.get_paginated_response(serializer.data)
-
 
 # Review management with optional search by Movie Title and Rating filtering
 class ReviewListCreateView(APIView):
@@ -291,4 +259,25 @@ class ReviewDetailView(APIView):
         review = Review.objects.get(id=review_id, user=request.user)
         review.delete()
         return Response({"message": "Review deleted successfully"})
+   
     
+class CreateMovieReviewView(APIView):
+    permission_classes = [IsAuthenticated]  # Requires authentication
+
+    def post(self, request, movie_id):
+        try:
+            # Check if the movie exists
+            movie = Movie.objects.get(id=movie_id)
+        except Movie.DoesNotExist:
+            return Response({"error": "Movie not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Add movie and user information to the review data
+        data = request.data
+        data["movie"] = movie_id
+        data["user"] = request.user.id
+
+        serializer = ReviewSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
