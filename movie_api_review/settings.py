@@ -28,7 +28,8 @@ SECRET_KEY = 'django-insecure-s4fp6^y1b*4l8f&ljdw_k3ubm!xi3gd0b6glov+8_3a#9^swlp
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['StevenTawali.pythonanywhere.com']
+
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'StevenTawali.pythonanywhere.com']
 
 
 # Application definition
@@ -132,3 +133,15 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+REST_FRAMEWORK = {
+   'DEFAULT_FILTER_BACKENDS':
+		'django_filters.rest_framework.DjangoFilterBackend',
+
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}
