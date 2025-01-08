@@ -146,51 +146,26 @@ class MovieDetailView(APIView):
 
 # Review management with optional search by Movie Title and Rating filtering
 class ReviewListCreateView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]  # Requires authentication to interact with reviews
 
     def get(self, request, movie_id):
         reviews = Review.objects.filter(movie_id=movie_id)
         movie_title = request.query_params.get('movie_title', None)
         rating = request.query_params.get('rating', None)
 
-        # Filter by movie title if provided
         if movie_title:
-            reviews = reviews.filter(movie__title__icontains=movie_title)
-
-        # Filter by rating if provided
+            reviews = reviews.filter(movie__title__icontains=movie_title)  # Filter by movie title
+        
         if rating:
             try:
                 rating = int(rating)
                 if 1 <= rating <= 5:
-                    reviews = reviews.filter(rating=rating)
+                    reviews = reviews.filter(rating=rating)  # Filter by rating
                 else:
                     return Response({"error": "Rating must be between 1 and 5."}, status=status.HTTP_400_BAD_REQUEST)
             except ValueError:
                 return Response({"error": "Invalid rating value. Rating must be an integer between 1 and 5."}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Serialize and return the filtered reviews
-        serializer = ReviewSerializer(reviews, many=True)
-        return Response(serializer.data)
-
-    def post(self, request, movie_id):
-        # Check if the movie exists
-        try:
-            movie = Movie.objects.get(id=movie_id)
-        except Movie.DoesNotExist:
-            return Response({"error": "Movie not found."}, status=status.HTTP_404_NOT_FOUND)
-
-        # Add the movie_id to the request data before saving the review
-        data = request.data
-        data['movie'] = movie.id  # Attach the movie to the review
-
-        # Serialize and save the review
-        serializer = ReviewSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    
+        
         # Apply pagination
         paginator = ReviewPagination()
         result_page = paginator.paginate_queryset(reviews, request)
