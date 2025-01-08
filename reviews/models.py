@@ -1,5 +1,7 @@
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.contrib.auth.models import User
+
 
 class Movie(models.Model):
     title = models.CharField(max_length=255)
@@ -10,8 +12,6 @@ class Movie(models.Model):
     def __str__(self):
         return self.title
     
-from django.contrib.auth.models import User
-
 class Review(models.Model):
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='reviews')
     user = models.ForeignKey(User, on_delete=models.CASCADE)
