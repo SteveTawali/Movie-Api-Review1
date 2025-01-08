@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import authenticate
 from .models import Movie, Review
-from rest_framework import generics, permissions, viewsets
+from rest_framework import generics, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.pagination import PageNumberPagination
@@ -81,18 +81,66 @@ class RegisterView(APIView):
     permission_classes = [AllowAny]  # Allows anyone to register (no authentication required)
 
     def post(self, request):
+        serializer = RegisterSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()  # This will create the user using the serializer
+            return Response({"message": "User created successfully"}, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+# User Profile view
+class UserProfileView(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]  # Requires authentication to view profile
+
+    def get_object(self):
+        return self.request.user  # Return the currently authenticated user
+    
+
+# User List view (optional, if you need to view all users)
+class UserListView(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAdminUser]  # Only admins can view all users
+
+# User Update view
+class UserUpdateView(APIView):
+    permission_classes = [IsAuthenticated]  # Requires authentication to update profile
+
+    def put(self, request):
+        user = request.user
         data = request.data
+
+        # Update user's information
+        if 'email' in data:
+            user.email = data['email']
         
-        if "username" not in data or "password" not in data:
-            return Response({"error": "Username and password are required"}, status=status.HTTP_400_BAD_REQUEST)
+        if 'password' in data:
+            user.password = make_password(data['password'])  # Hash the new password
         
-        user = User.objects.create(
-            username=data["username"],
-            password=make_password(data["password"]),  # Ensure password is hashed
-            email=data.get("email", ""),
-        )
+        if 'first_name' in data:
+            user.first_name = data['first_name']
         
-        return Response({"message": "User created successfully"}, status=status.HTTP_201_CREATED)
+        if 'last_name' in data:
+            user.last_name = data['last_name']
+
+        user.save()
+
+        return Response({"message": "User updated successfully"})
+
+
+# User Delete view
+class UserDeleteView(APIView):
+    permission_classes = [IsAuthenticated]  # Requires authentication to delete profile
+
+    def delete(self, request):
+        user = request.user
+        user.delete()
+        return Response({"message": "User deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+    
 
 
 # Login view with JWT token generation
@@ -155,6 +203,38 @@ class MovieDetailView(APIView):
         movie.delete()
         return Response({"message": "Movie deleted successfully"})
 
+#View Reviews by Movie
+class MovieReviewListView(APIView):
+    permission_classes = [AllowAny]  # Anyone can view reviews for a specific movie
+
+    def get(self, request, movie_id):
+        # Fetch all reviews for the given movie_id
+        reviews = Review.objects.filter(movie_id=movie_id)
+
+        # Optional query parameters for additional filtering
+        rating = request.query_params.get('rating', None)
+        if rating:
+            try:
+                rating = int(rating)
+                if 1 <= rating <= 5:
+                    reviews = reviews.filter(rating=rating)  # Filter by rating
+                else:
+                    return Response(
+                        {"error": "Rating must be between 1 and 5."},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            except ValueError:
+                return Response(
+                    {"error": "Invalid rating value. Rating must be an integer between 1 and 5."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        # Apply pagination
+        paginator = ReviewPagination()
+        result_page = paginator.paginate_queryset(reviews, request)
+        serializer = ReviewSerializer(result_page, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
 
 # Review management with optional search by Movie Title and Rating filtering
 class ReviewListCreateView(APIView):
@@ -212,9 +292,3 @@ class ReviewDetailView(APIView):
         review.delete()
         return Response({"message": "Review deleted successfully"})
     
-
-# User Profile view
-class UserProfileView(generics.RetrieveAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated]  # Requires authentication to view profile
