@@ -3,7 +3,7 @@
 A Django-based API for managing movie reviews.  
 
 ## Prerequisites  
-- Python 3.8+  
+- Python 3.10
 - pip  
 - virtualenv  
 

@@ -233,7 +233,6 @@ class ReviewListCreateView(APIView):
         return paginator.get_paginated_response(serializer.data)
 
     def post(self, request, movie_id):
-        print("movie_id received:", movie_id)
         data = request.data
         data["movie"] = movie_id
         data["user"] = request.user.id
