@@ -84,10 +84,11 @@ WSGI_APPLICATION = 'movie_api_review.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'StevenTawali$movie_reviews',  # Database name
-        'USER': 'StevenTawali',    # Your MySQL username
-        'PASSWORD': 'Katawali@1',  # Your MySQL password
-        'HOST': 'StevenTawali.mysql.pythonanywhere-services.com',         # Or the IP address of your database server
+        'NAME': 'movie_reviews',  # Database name
+        'USER': 'Tawali',    # Your MySQL username
+        'PASSWORD': 'Tawali@+1',  # Your MySQL password
+        'HOST': 'localhost',         # Or the IP address of your database server
+        'PORT': '3306',              # Default MySQL port
     }
 }
 
