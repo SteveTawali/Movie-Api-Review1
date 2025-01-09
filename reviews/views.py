@@ -233,7 +233,6 @@ class ReviewListCreateView(APIView):
         return paginator.get_paginated_response(serializer.data)
 
     def post(self, request, movie_id):
-        print("movie_id received:", movie_id)
         data = request.data
         data["movie"] = movie_id
         data["user"] = request.user.id
@@ -272,14 +271,13 @@ class CreateMovieReviewView(APIView):
         except Movie.DoesNotExist:
             return Response({"error": "Movie not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        # Initialize the serializer with request data
-        serializer = ReviewSerializer(data=request.data)
+        # Add movie and user information to the review data
+        data = request.data
+        data["movie"] = movie_id
+        data["user"] = request.user.id
 
-        # Validate and save the review, passing the movie and user directly
+        serializer = ReviewSerializer(data=data)
         if serializer.is_valid():
-            # Save the review with movie and user information
-            serializer.save(movie=movie, user=request.user)
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        # If validation fails, return error response
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

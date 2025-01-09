@@ -24,8 +24,9 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Review
-        fields = ['id', 'movie', 'user', 'rating', 'comment']
-        
+        fields = '__all__'
+        read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'movie']
+
 #For registering new users:
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8)
