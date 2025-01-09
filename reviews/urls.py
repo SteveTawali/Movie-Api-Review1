@@ -30,7 +30,7 @@ urlpatterns = [
     path('delete-profile/', UserDeleteView.as_view(), name='delete-profile'),
     path('users/', UserListView.as_view(), name='user-list'),  # Optional
 
-    
+
     # Movies
     path('movies/', MovieListCreateView.as_view(), name='movie-list-create'),
     path('movies/<int:movie_id>/', MovieDetailView.as_view(), name='movie-detail'),
