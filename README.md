@@ -39,10 +39,6 @@ A Django-based API for managing movie reviews.
 ## Running the API  
 Visit `http://127.0.0.1:8000/` in your browser.  
 
-## License  
-MIT License  
-
-
 # Movie Review API
 
 This is a **Movie Review API** built using Django and Django REST Framework (DRF). The API allows users to register, authenticate, and interact with movies and reviews. It provides endpoints for creating, retrieving, updating, and deleting movies and reviews.
